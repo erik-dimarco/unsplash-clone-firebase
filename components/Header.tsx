@@ -24,6 +24,7 @@ import { useRouter } from "next/router";
 import SearchModal from "./SearchModal";
 import { signOut, useSession } from "next-auth/react";
 import ProfileModal from "./ProfileModal";
+// import { Session } from "./types/next-auth";
 
 interface HeaderProps {
   placeholder?: string;
@@ -87,28 +88,43 @@ function Header({ placeholder }: HeaderProps) {
 
         {/* Search box */}
         <div ref={ref} className="flex-1 relative">
-          <form
-            onSubmit={(event) => {
-              search(event);
-            }}
-            className="flex items-center space-x-2 border rounded-full outline-none border-gray-200 bg-gray-100 focus-within:bg-white hover:border-gray-300 px-3 py-2"
-          >
-            <SearchIcon
-              className="h-5 w-5 text-gray-500 cursor-pointer"
-              onClick={search}
-            />
-            <input
-              className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm"
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={placeholder ?? "Search free high-resolution photos"}
-              onClick={() => setSearchModal(true)}
-            />
-
-            <button type="submit" hidden />
-          </form>
-          <SearchModal isOpen={isSearchModalOpen} searchInput={searchInput} />
+          <Popover>
+            <form
+              onSubmit={(event) => {
+                search(event);
+              }}
+              className="flex items-center space-x-2 border rounded-full outline-none border-gray-200 bg-gray-100 focus-within:bg-white hover:border-gray-300 px-3 py-2"
+            >
+              <SearchIcon
+                className="h-5 w-5 text-gray-500 cursor-pointer"
+                onClick={search}
+              />
+              <Popover.Button className="flex-1 outline-none placeholder-gray-500 text-sm">
+                <input
+                  className="w-full bg-transparent outline-none"
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder={
+                    placeholder ?? "Search free high-resolution photos"
+                  }
+                />
+              </Popover.Button>
+              <button type="submit" hidden />
+            </form>
+            <Transition
+              enter="transition duration-100 ease-out"
+              enterFrom="transform scale-95 opacity-0"
+              enterTo="transform scale-100 opacity-100"
+              leave="transition duration-75 ease-out"
+              leaveFrom="transform scale-100 opacity-100"
+              leaveTo="transform scale-95 opacity-0"
+            >
+              <Popover.Panel className="">
+                <SearchModal />
+              </Popover.Panel>
+            </Transition>
+          </Popover>
         </div>
 
         {/* Buttons */}
@@ -149,11 +165,7 @@ function Header({ placeholder }: HeaderProps) {
               <BellIcon className="h-6 w-6 text-gray-500 -rotate-[15deg] hover:text-black cursor-pointer" />
               <Popover className="">
                 <Popover.Button className="h-8 w-8 rounded-full hover:text-black cursor-pointer focus:outline-none">
-                  <img
-                    className="rounded-full"
-                    src={session?.user?.image as string}
-                    alt="profile"
-                  />
+                  <img className="rounded-full" src={session.user.image} />
                 </Popover.Button>
                 <Transition
                   enter="transition duration-100 ease-out"
@@ -181,7 +193,7 @@ function Header({ placeholder }: HeaderProps) {
                         onClick={() => signOut()}
                         className="flex min-w-full hover:bg-gray-100 hover:text-gray-700 p-3 cursor-pointer"
                       >
-                        <p>Logout {`@${session.user?.name}`}</p>
+                        <p>Logout {`@${session.user.username}`}</p>
                       </div>
                     </div>
                   </Popover.Panel>
