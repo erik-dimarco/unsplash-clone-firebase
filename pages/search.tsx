@@ -1,60 +1,107 @@
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
+import Cards, { CardFields } from "../components/Cards";
 import Header from "../components/Header";
+import SearchTabs from "../components/SearchTabs";
 
-type Props = {
-  searchResults: SearchResults[];
-};
+type Props = {};
 
-const Search = ({ searchResults }: Props) => {
+const Search = ({}: Props) => {
   const router = useRouter();
   const { topic } = router.query;
   const searchString = topic as string;
+
+  const [searchResults, setSearchResults] = useState<CardFields[]>([]);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [resultsPerPage, setResultsPerPage] = useState<number>(25);
+  const [imagesTotal, setImagesTotal] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [hasMoreResults, setHasMoreResults] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (searchString) {
+      const initialSearchResults = async () => {
+        const resCards = await fetch(
+          `https://api.unsplash.com/search/photos?&page=${pageNumber}&query=${searchString}&per_page=${resultsPerPage}&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
+        );
+
+        const imageCards = await resCards.json();
+
+        setImagesTotal(imageCards.total);
+        setTotalPages(imageCards.total_pages);
+
+        const cards = imageCards.results.map((card: CardFields) => {
+          return {
+            id: card.id,
+            description: card.description,
+            user: {
+              id: card.user.id,
+              name: card.user.name,
+              username: card.user.username,
+              profile_image: card.user.profile_image,
+            },
+            urls: {
+              full: card.urls.full,
+              regular: card.urls.regular,
+            },
+          };
+        });
+
+        setSearchResults(cards);
+      };
+
+      initialSearchResults();
+    }
+  }, [searchString]);
+
+  const getMoreSearchResults = async () => {
+    setPageNumber(pageNumber + 1);
+    setHasMoreResults(totalPages > pageNumber);
+
+    const resCards = await fetch(
+      `https://api.unsplash.com/search/photos?&page=${pageNumber}&query=${searchString}&per_page=${resultsPerPage}&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
+    );
+
+    const imageCards = await resCards.json();
+
+    const moreCards = imageCards.results.map((card: CardFields) => {
+      return {
+        id: card.id,
+        description: card.description,
+        user: {
+          id: card.user.id,
+          name: card.user.name,
+          username: card.user.username,
+          profile_image: card.user.profile_image,
+        },
+        urls: {
+          full: card.urls.full,
+          regular: card.urls.regular,
+        },
+      };
+    });
+
+    setSearchResults((searchResults) => [...searchResults, ...moreCards]);
+  };
 
   return (
     <div className="h-screen">
       <Header placeholder={searchString} />
 
-      <main className="flex">
-        <section className="flex-grow pt-14 px-6">
-          <div className="hidden lg:inline-flex mb-5 space-x-3 text-gray-800 whitespace-nowrap">
-            <p className="button">Cancellation Flexibility</p>
-            <p className="button">Type of Place</p>
-            <p className="button">Price</p>
-            <p className="button">Rooms and Beds</p>
-            <p className="button">More filters</p>
+      <section className="flex-grow mt-4">
+        <InfiniteScroll
+          dataLength={searchResults.length}
+          next={getMoreSearchResults}
+          hasMore={hasMoreResults}
+          loader={<></>}
+          endMessage={<p className="text-center"> End of search results</p>}
+        >
+          <div className="flex">
+            <SearchTabs photos={searchResults} imagesTotal={imagesTotal} />
           </div>
-
-          <div className="flex flex-col">
-            {/* {searchResults.map(
-              ({
-                img,
-                location,
-                title,
-                description,
-                star,
-                price,
-                total,
-                long,
-                lat,
-              }: SearchResults) => (
-                // <InfoCard
-                //   key={img}
-                //   img={img}
-                //   location={location}
-                //   title={title}
-                //   description={description}
-                //   star={star}
-                //   price={price}
-                //   total={total}
-                //   long={long}
-                //   lat={lat}
-                // />
-              )
-            )} */}
-          </div>
-        </section>
-      </main>
+        </InfiniteScroll>
+      </section>
 
       {/* <Footer /> */}
     </div>
@@ -62,26 +109,3 @@ const Search = ({ searchResults }: Props) => {
 };
 
 export default Search;
-
-interface SearchResults {
-  img: string;
-  location: string;
-  title: string;
-  description: string;
-  star: number;
-  price: string;
-  total: string;
-  long: number;
-  lat: number;
-}
-
-export const getServerSideProps = async () => {
-  const res = await fetch("https://links.papareact.com/isz");
-  const searchResults: SearchResults[] = await res.json();
-
-  return {
-    props: {
-      searchResults,
-    },
-  };
-};

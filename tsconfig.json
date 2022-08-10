@@ -16,6 +16,6 @@
     "incremental": true,
     "typeRoots": ["./components/types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "firebase/firebase.js"],
   "exclude": ["node_modules"]
 }

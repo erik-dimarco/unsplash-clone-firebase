@@ -3,14 +3,80 @@ import Head from "next/head";
 import Image from "next/image";
 import Cards, { CardFields } from "../components/Cards";
 import Header from "../components/Header";
+import Modal from "../components/Modal";
 import Hero from "../components/Hero";
+import Footer from "../components/Footer";
+import { useEffect, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 type Props = {
-  cards: CardFields[];
   heroCarousel: CardFields[];
 };
 
-const Home = ({ cards, heroCarousel }: Props) => {
+const Home = ({ heroCarousel }: Props) => {
+  const [popularPhotos, setPopularPhotos] = useState<CardFields[]>([]);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+
+  useEffect(() => {
+    const initialPopularPhotos = async () => {
+      const resCards = await fetch(
+        `https://api.unsplash.com/photos?&page=${pageNumber}&per_page=25&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
+      );
+
+      const imageCards = await resCards.json();
+
+      const cards = imageCards.map((card: CardFields) => {
+        return {
+          id: card.id,
+          description: card.description,
+          user: {
+            id: card.user.id,
+            name: card.user.name,
+            username: card.user.username,
+            profile_image: card.user.profile_image,
+          },
+          urls: {
+            full: card.urls.full,
+            regular: card.urls.regular,
+          },
+        };
+      });
+
+      setPopularPhotos(cards);
+    };
+
+    initialPopularPhotos();
+  }, []);
+
+  const getMoreSearchResults = async () => {
+    setPageNumber(pageNumber + 1);
+
+    const resCards = await fetch(
+      `https://api.unsplash.com/photos?&page=${pageNumber}&per_page=25&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
+    );
+
+    const imageCards = await resCards.json();
+
+    const moreCards = imageCards.map((card: CardFields) => {
+      return {
+        id: card.id,
+        description: card.description,
+        user: {
+          id: card.user.id,
+          name: card.user.name,
+          username: card.user.username,
+          profile_image: card.user.profile_image,
+        },
+        urls: {
+          full: card.urls.full,
+          regular: card.urls.regular,
+        },
+      };
+    });
+
+    setPopularPhotos((popularPhotos) => [...popularPhotos, ...moreCards]);
+  };
+
   return (
     <div>
       <Head>
@@ -29,21 +95,20 @@ const Home = ({ cards, heroCarousel }: Props) => {
           />
         </section>
         <section className="max-w-[1320px] mx-auto">
-          <Cards imageCards={cards} />
+          <InfiniteScroll
+            dataLength={popularPhotos.length}
+            next={getMoreSearchResults}
+            hasMore={pageNumber < 101}
+            loader={<></>}
+            endMessage={<p className="text-center"> End of curated photos.</p>}
+          >
+            <Cards imageCards={popularPhotos} />
+          </InfiniteScroll>
         </section>
+        <Modal />
       </main>
 
-      {/* <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer> */}
+      <Footer />
     </div>
   );
 };
@@ -51,32 +116,9 @@ const Home = ({ cards, heroCarousel }: Props) => {
 export default Home;
 
 export const getServerSideProps = async () => {
-  const resCards = await fetch(
-    "https://api.unsplash.com/photos?page=1&per_page=50&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0"
-  );
-
   const resHero = await fetch(
-    "https://api.unsplash.com/photos?page=1&per_page=10&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0"
+    `https://api.unsplash.com/photos?page=1&per_page=10&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
   );
-
-  const imageCards: CardFields[] = await resCards.json();
-
-  const cards = imageCards.map((card: CardFields) => {
-    return {
-      id: card.id,
-      description: card.description,
-      user: {
-        id: card.user.id,
-        name: card.user.name,
-        username: card.user.username,
-        profile_image: card.user.profile_image,
-      },
-      urls: {
-        full: card.urls.full,
-        regular: card.urls.regular,
-      },
-    };
-  });
 
   const heroOptions: CardFields[] = await resHero.json();
 
@@ -99,7 +141,6 @@ export const getServerSideProps = async () => {
 
   return {
     props: {
-      cards,
       heroCarousel,
     },
   };
