@@ -1,6 +1,4 @@
-import { getImageSize } from "next/dist/server/image-optimizer";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Card from "./Card";
 
 type CardsProps = {
@@ -10,19 +8,20 @@ type CardsProps = {
 export type CardFields = {
   id: string;
   description: string;
+  createdAt?: number;
   user: User;
   urls: Urls;
 };
 
 type User = {
-  id: string;
+  id?: string;
   name: string;
-  username: string;
+  username?: string;
   profile_image: ProfileImage;
 };
 
 type Urls = {
-  full: string;
+  full?: string;
   regular: string;
 };
 

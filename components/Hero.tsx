@@ -85,7 +85,7 @@ const Hero = ({ placeholder, images }: HeroProps) => {
         className="absolute h-12 w-12 right-0 bottom-0 text-white text-md p-3 cursor-pointer"
       />
 
-      <div className="relative top-1/4 left-[10%] sm:left-1/4">
+      <div className="relative max-w-4xl top-1/4 left-[10%] sm:left-1/4">
         <p className="text-white font-bold text-4xl mb-3">Unsplash</p>
         <p className="text-white text-large">
           The internet’s source of freely-usable images.
@@ -94,7 +94,7 @@ const Hero = ({ placeholder, images }: HeroProps) => {
 
         {/* Search box */}
 
-        <div className="relative w-1/2 max-w-4xl invisible sm:visible">
+        <div className="relative w-full invisible sm:visible">
           <Popover className="">
             <form
               onSubmit={(event) => {

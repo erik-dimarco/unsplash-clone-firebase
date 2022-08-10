@@ -19,42 +19,25 @@ import {
 } from "@heroicons/react/outline";
 import { BellIcon } from "@heroicons/react/solid";
 import { Popover, Transition } from "@headlessui/react";
-import Home from "../pages";
 import { useRouter } from "next/router";
-import SearchModal from "./SearchModal";
-import { signOut, useSession } from "next-auth/react";
-import ProfileModal from "./ProfileModal";
-// import { Session } from "./types/next-auth";
 
+import SearchModal from "./SearchModal";
+import { useUser } from "@auth0/nextjs-auth0";
 interface HeaderProps {
   placeholder?: string;
 }
 
 function Header({ placeholder }: HeaderProps) {
   const [searchInput, setSearchInput] = useState<string>("");
-  const [isSearchModalOpen, setSearchModal] = useState<boolean>(false);
+  const { user, error, isLoading } = useUser();
+
   const router = useRouter();
-  const ref = createRef<HTMLDivElement>();
-  const { data: session } = useSession();
 
-  // Handle Closing of search modal
-  useEffect(() => {
-    const listener = (event: any) => {
-      // Do nothing if clicking ref's element or descendent elements
-      if (!ref.current || ref.current.contains(event.target)) {
-        return;
-      }
-      // Otherwise close the modal
-      handleClose();
-    };
-
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
-    return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
-    };
-  });
+  const handleLogout = async (e: any) => {
+    e.preventDefault();
+    console.log("logging out", user);
+    router.push("/api/auth/logout");
+  };
 
   const search = (event: any) => {
     event.preventDefault();
@@ -72,10 +55,6 @@ function Header({ placeholder }: HeaderProps) {
     setSearchInput("");
   };
 
-  const handleClose = () => {
-    setSearchModal(false);
-  };
-
   return (
     <div className="sticky top-0 z-10">
       <div className="flex bg-white px-4 py-3 shadow-sm items-center box-border">
@@ -87,7 +66,7 @@ function Header({ placeholder }: HeaderProps) {
         </div>
 
         {/* Search box */}
-        <div ref={ref} className="flex-1 relative">
+        <div className="flex-1 relative">
           <Popover>
             <form
               onSubmit={(event) => {
@@ -143,16 +122,19 @@ function Header({ placeholder }: HeaderProps) {
           <div className="border-l-2 h-10"></div>
         </div>
         <div className="flex text-gray-600 space-x-3 text-sm items-center">
-          {!session && (
+          {!user && (
             <>
               <p
-                onClick={() => router.push("/auth/signin")}
+                onClick={() => router.push("/api/auth/login")}
                 className="hover:font-semibold hover:text-black cursor-pointer"
               >
                 Log in
               </p>
               <p>/</p>
-              <p className="hover:font-semibold hover:text-black cursor-pointer">
+              <p
+                onClick={() => router.push("/api/auth/login")}
+                className="hover:font-semibold hover:text-black cursor-pointer"
+              >
                 Sign up
               </p>
             </>
@@ -160,12 +142,12 @@ function Header({ placeholder }: HeaderProps) {
           <button className="border-2 border-gray-300 rounded-md p-2 text-sm">
             Submit a photo
           </button>
-          {session && (
+          {user && (
             <>
               <BellIcon className="h-6 w-6 text-gray-500 -rotate-[15deg] hover:text-black cursor-pointer" />
               <Popover className="">
                 <Popover.Button className="h-8 w-8 rounded-full hover:text-black cursor-pointer focus:outline-none">
-                  <img className="rounded-full" src={session.user.image} />
+                  <img className="rounded-full" src={user.picture as string} />
                 </Popover.Button>
                 <Transition
                   enter="transition duration-100 ease-out"
@@ -178,7 +160,10 @@ function Header({ placeholder }: HeaderProps) {
                   <Popover.Panel className="absolute -left-36 top-2 min-w-[185px] bg-white border rounded-md shadow-md border-gray-300 text-gray-500">
                     <div className="absolute right-3 -top-1 border border-gray-300 h-6 w-6 rotate-45 bg-white overflow-hidden -z-10"></div>
                     <div className="absolute right-4 -top-4 border-2 border-b-white border-t-transparent border-x-transparent h-4 w-4"></div>
-                    <div className="flex min-w-full hover:bg-gray-100 hover:text-gray-700 p-3 cursor-pointer">
+                    <div
+                      onClick={() => router.push("/profile")}
+                      className="flex min-w-full hover:bg-gray-100 hover:text-gray-700 p-3 cursor-pointer"
+                    >
                       <p className="text-sm">View profile</p>
                     </div>
                     <div className="flex min-w-full hover:bg-gray-100 hover:text-gray-700 p-3 cursor-pointer">
@@ -190,10 +175,10 @@ function Header({ placeholder }: HeaderProps) {
                     <div className="">
                       <p className="min-w-full h-1 border-t border-gray-300"></p>
                       <div
-                        onClick={() => signOut()}
+                        onClick={handleLogout}
                         className="flex min-w-full hover:bg-gray-100 hover:text-gray-700 p-3 cursor-pointer"
                       >
-                        <p>Logout {`@${session.user.username}`}</p>
+                        <p>Logout {`@${user.nickname}`}</p>
                       </div>
                     </div>
                   </Popover.Panel>
