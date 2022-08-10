@@ -160,7 +160,8 @@ const ProfileTabs = () => {
             {likes.length > 0 ? (
               <div className="mt-6 mb-6">
                 <Cards
-                  imageCards={likes.sort((a, b) => b.createdAt - a.createdAt)}
+                  // imageCards={likes.sort((a, b) => b.createdAt - a.createdAt)}
+                  imageCards={likes}
                 />
               </div>
             ) : (
