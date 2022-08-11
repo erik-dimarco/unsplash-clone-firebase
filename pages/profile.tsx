@@ -4,6 +4,7 @@ import ProfileHeader from "../components/ProfileHeader";
 
 import Header from "../components/Header";
 import ProfileTabs from "../components/ProfileTabs";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 type ProfileProps = {};
 
@@ -22,3 +23,6 @@ const Profile = ({}: ProfileProps) => {
 };
 
 export default Profile;
+
+// withPageAuthRequired will redirect the user to login if logged out.
+export const getServerSideProps = withPageAuthRequired();

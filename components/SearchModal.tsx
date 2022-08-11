@@ -1,8 +1,6 @@
-import { UsersIcon } from "@heroicons/react/solid";
-import React, { createRef, useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { TrendingUpIcon } from "@heroicons/react/solid";
-import Image from "next/image";
 
 type SearchModalProps = {};
 
@@ -49,7 +47,7 @@ const SearchModal = ({}: SearchModalProps) => {
     <div className="absolute z-50 w-full mt-[2px] mx-auto bg-white p-3 border rounded-md shadow-md border-gray-200">
       {recentSearches.length > 0 && (
         <>
-          <div className="flex flex-wrap items-center mb-4">
+          <div className="flex items-center mb-4">
             <h2 className="text-sm font-semibold">Recent Searches</h2>
             <p className="rounded-full h-[3px] w-[3px] bg-gray-700 mx-[6px]"></p>
             <button
