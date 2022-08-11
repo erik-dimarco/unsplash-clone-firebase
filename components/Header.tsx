@@ -1,22 +1,6 @@
 import Image from "next/image";
-import React, { createRef, useEffect, useState } from "react";
-import {
-  ChevronDownIcon,
-  HomeIcon,
-  MenuIcon,
-  SearchIcon,
-  UserIcon,
-  UsersIcon,
-} from "@heroicons/react/solid";
-import {
-  ChatIcon,
-  ChevronUpIcon,
-  GlobeIcon,
-  PlusIcon,
-  SparklesIcon,
-  SpeakerphoneIcon,
-  VideoCameraIcon,
-} from "@heroicons/react/outline";
+import React, { createRef, useEffect, useRef, useState } from "react";
+import { MenuIcon, SearchIcon } from "@heroicons/react/solid";
 import { BellIcon } from "@heroicons/react/solid";
 import { Popover, Transition } from "@headlessui/react";
 import { useRouter } from "next/router";
@@ -29,13 +13,33 @@ interface HeaderProps {
 
 function Header({ placeholder }: HeaderProps) {
   const [searchInput, setSearchInput] = useState<string>("");
-  const { user, error, isLoading } = useUser();
+  const [isSearchModalOpen, setModal] = useState<boolean>(false);
+  const { user } = useUser();
 
   const router = useRouter();
+  const ref = createRef<HTMLDivElement>();
+
+  // Handle Closing of search modal
+  useEffect(() => {
+    const listener = (event: any) => {
+      // Do nothing if clicking ref's element or descendent elements
+      if (!ref.current || ref.current.contains(event.target)) {
+        return;
+      }
+      // Otherwise close the modal
+      handleClose();
+    };
+
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  });
 
   const handleLogout = async (e: any) => {
     e.preventDefault();
-    console.log("logging out", user);
     router.push("/api/auth/logout");
   };
 
@@ -55,6 +59,10 @@ function Header({ placeholder }: HeaderProps) {
     setSearchInput("");
   };
 
+  const handleClose = () => {
+    setModal(false);
+  };
+
   return (
     <div className="sticky top-0 z-10">
       <div className="flex bg-white px-4 py-3 shadow-sm items-center box-border">
@@ -67,43 +75,44 @@ function Header({ placeholder }: HeaderProps) {
 
         {/* Search box */}
         <div className="flex-1 relative">
-          <Popover>
-            <form
-              onSubmit={(event) => {
-                search(event);
-              }}
-              className="flex items-center space-x-2 border rounded-full outline-none border-gray-200 bg-gray-100 focus-within:bg-white hover:border-gray-300 px-3 py-2"
+          <form
+            onSubmit={(event) => {
+              search(event);
+            }}
+            className="flex items-center space-x-2 border rounded-full outline-none border-gray-200 bg-gray-100 focus-within:bg-white hover:border-gray-300 px-3 py-2"
+          >
+            <SearchIcon
+              className="h-5 w-5 text-gray-500 cursor-pointer"
+              onClick={search}
+            />
+            <div
+              onClick={() => setModal(true)}
+              ref={ref}
+              className="flex-1 outline-none placeholder-gray-500 text-sm"
             >
-              <SearchIcon
-                className="h-5 w-5 text-gray-500 cursor-pointer"
-                onClick={search}
+              <input
+                className="w-full bg-transparent outline-none"
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={
+                  placeholder ?? "Search free high-resolution photos"
+                }
               />
-              <Popover.Button className="flex-1 outline-none placeholder-gray-500 text-sm">
-                <input
-                  className="w-full bg-transparent outline-none"
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={
-                    placeholder ?? "Search free high-resolution photos"
-                  }
-                />
-              </Popover.Button>
-              <button type="submit" hidden />
-            </form>
-            <Transition
-              enter="transition duration-100 ease-out"
-              enterFrom="transform scale-95 opacity-0"
-              enterTo="transform scale-100 opacity-100"
-              leave="transition duration-75 ease-out"
-              leaveFrom="transform scale-100 opacity-100"
-              leaveTo="transform scale-95 opacity-0"
-            >
-              <Popover.Panel className="">
-                <SearchModal />
-              </Popover.Panel>
-            </Transition>
-          </Popover>
+            </div>
+            <button type="submit" hidden />
+          </form>
+          <Transition
+            show={isSearchModalOpen}
+            enter="transition duration-100 ease-out"
+            enterFrom="transform scale-95 opacity-0"
+            enterTo="transform scale-100 opacity-100"
+            leave="transition duration-75 ease-out"
+            leaveFrom="transform scale-100 opacity-100"
+            leaveTo="transform scale-95 opacity-0"
+          >
+            <SearchModal />
+          </Transition>
         </div>
 
         {/* Buttons */}

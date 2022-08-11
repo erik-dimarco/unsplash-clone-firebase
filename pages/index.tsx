@@ -3,7 +3,6 @@ import Head from "next/head";
 import Image from "next/image";
 import Cards, { CardFields } from "../components/Cards";
 import Header from "../components/Header";
-import Modal from "../components/Modal";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { useEffect, useState } from "react";
@@ -105,7 +104,6 @@ const Home = ({ heroCarousel }: Props) => {
             <Cards imageCards={popularPhotos} />
           </InfiniteScroll>
         </section>
-        <Modal />
       </main>
 
       <Footer />

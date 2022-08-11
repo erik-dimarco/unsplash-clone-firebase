@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { selector, useRecoilState, useRecoilValue } from "recoil";
 import { Dialog, Transition } from "@headlessui/react";
 import { LockClosedIcon } from "@heroicons/react/solid";
 import { db } from "../firebase";
@@ -14,25 +13,30 @@ import {
   query,
   onSnapshot,
   collection,
-  orderBy,
   doc,
   serverTimestamp,
   addDoc,
   where,
-  getDocs,
   DocumentData,
   setDoc,
 } from "firebase/firestore";
 
-import { modalState } from "../atoms/modalAtom";
-import { selectedImageState } from "../atoms/selectedImageAtom";
 import { useUser } from "@auth0/nextjs-auth0";
+import { CardFields } from "./Cards";
 
-type ModalProps = {};
+type CollectionsModal = {
+  show: boolean;
+  selectedImage: CardFields;
+  setModalOpen: Dispatch<SetStateAction<boolean>>;
+};
 
-const Modal = ({}: ModalProps) => {
+const CollectionsModal = ({
+  show,
+  selectedImage,
+  setModalOpen,
+}: CollectionsModal) => {
   const { user, error, isLoading } = useUser();
-  const [modalOpen, setModalOpen] = useRecoilState(modalState);
+  const [selectedCard, setSelectedCard] = useState<CardFields>(selectedImage);
   const [modalPage2, setModalPage2] = useState(false);
   const [nameCharRemaining, setNameCharRemaining] = useState(60);
   const [descriptionCharRemaining, setDescriptionCharRemaining] = useState(250);
@@ -41,7 +45,6 @@ const Modal = ({}: ModalProps) => {
 
   useEffect(() => {
     if (user) {
-      console.log({ user });
       const q = query(
         collection(db, "collections"),
         where("userId", "==", user.sub)
@@ -58,16 +61,6 @@ const Modal = ({}: ModalProps) => {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const makePrivateRef = useRef<HTMLInputElement>(null);
 
-  const image = selector({
-    key: "selectedImageState",
-    get: ({ get }) => get(selectedImageState),
-  });
-  const selectedImage = useRecoilValue(image);
-
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
   const handleCancel = () => {
     setModalPage2(false);
     setNameCharRemaining(60);
@@ -79,7 +72,7 @@ const Modal = ({}: ModalProps) => {
   };
 
   let divStyle = {
-    backgroundImage: "url(" + selectedImage + ")",
+    backgroundImage: "url(" + selectedCard.urls.regular + ")",
     backgroundColor: "#d1d1d1",
     backgroundPosition: "50%",
     backgroundSize: "cover",
@@ -103,22 +96,27 @@ const Modal = ({}: ModalProps) => {
 
     // 2. Add images to collection (subcollection)
     await addDoc(collection(collectionRef, user?.sub as string, "images"), {
-      name: selectedImage.user.name,
-      userProfileImage: selectedImage.user.profile_image.large,
-      imageId: selectedImage.id,
-      imageURL: selectedImage.urls.regular,
-      description: selectedImage.description,
+      name: selectedCard.user.name,
+      userProfileImage: selectedCard.user.profile_image.large,
+      imageId: selectedCard.id,
+      imageURL: selectedCard.urls.regular,
+      description: selectedCard.description,
       timestamp: serverTimestamp(),
     });
 
-    setModalOpen(false);
     setLoading(false);
     setModalPage2(false);
+    setModalOpen(false);
   };
 
   return (
-    <Transition appear show={modalOpen as boolean} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+    <Transition show={show} appear as={Fragment}>
+      <Dialog
+        open={show}
+        onClose={() => setModalOpen(false)}
+        as="div"
+        className="relative z-10"
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -291,4 +289,4 @@ const Modal = ({}: ModalProps) => {
   );
 };
 
-export default Modal;
+export default CollectionsModal;

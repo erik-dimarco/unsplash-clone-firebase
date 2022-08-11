@@ -1,12 +1,11 @@
+import { useUser } from "@auth0/nextjs-auth0";
 import React, { useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
+
 import { CardFields } from "./Cards";
 import DownloadButton from "./DownloadButton";
 import HeartButton from "./HeartButton";
 import PlusButton from "./PlusButton";
-import { modalState } from "../atoms/modalAtom";
-import { selectedImageState } from "../atoms/selectedImageAtom";
-import { useUser } from "@auth0/nextjs-auth0";
+import CollectionsModal from "./CollectionsModal";
 import {
   query,
   collection,
@@ -14,24 +13,25 @@ import {
   DocumentData,
   onSnapshot,
   serverTimestamp,
-  addDoc,
   deleteDoc,
   doc,
   setDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import AlertsModal from "./AlertsModal";
+import Footer from "./Footer";
 
 type CardProps = {
   card: CardFields;
 };
 
 function Card({ card }: CardProps) {
-  const [modalOpen, setModalOpen] = useRecoilState(modalState);
-  const [selectedImage, setSelectedImage] =
-    useRecoilState<CardFields>(selectedImageState);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<CardFields>();
   const [liked, setLiked] = useState<boolean>(false);
   const { user, error, isLoading } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
+  const [alertsModalOpen, setAlertsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (user) {
@@ -52,42 +52,58 @@ function Card({ card }: CardProps) {
   const handlePlusClick = () => {
     if (user) {
       setModalOpen(true);
+      console.log("modalOpen", modalOpen);
       setSelectedImage(card);
+      console.log("selectedImage", selectedImage);
     } else {
-      alert("You must be logged in to add images to your collection");
+      setAlertsModalOpen(true);
     }
   };
 
   const handleHeartClick = async () => {
-    console.log("heart clicked", card);
-    if (loading) return;
+    if (user) {
+      if (loading) return;
 
-    setLoading(true);
+      setLoading(true);
 
-    if (!liked) {
-      const documentId = user?.sub + "-" + card.id;
-      //upload to firebase
-      await setDoc(doc(db, "likes", documentId), {
-        likedByUserId: user?.sub,
-        name: card.user.name,
-        userProfileImage: card.user.profile_image.large,
-        imageId: card.id,
-        imageURL: card.urls.regular,
-        description: card.description,
-        timestamp: serverTimestamp(),
-      });
-      setLiked(true);
+      if (!liked) {
+        const documentId = user?.sub + "-" + card.id;
+        //upload to firebase
+        await setDoc(doc(db, "likes", documentId), {
+          likedByUserId: user?.sub,
+          name: card.user.name,
+          userProfileImage: card.user.profile_image.large,
+          imageId: card.id,
+          imageURL: card.urls.regular,
+          description: card.description,
+          timestamp: serverTimestamp(),
+        });
+        setLiked(true);
+      } else {
+        //delete from firebase
+        await deleteDoc(doc(db, "likes", user?.sub + "-" + card.id));
+        setLiked(false);
+      }
+
+      setLoading(false);
     } else {
-      //delete from firebase
-      await deleteDoc(doc(db, "likes", user?.sub + "-" + card.id));
-      setLiked(false);
+      setAlertsModalOpen(true);
     }
-
-    setLoading(false);
   };
 
   return (
     <div key={card.id} className="group relative">
+      {selectedImage && (
+        <CollectionsModal
+          show={modalOpen}
+          setModalOpen={setModalOpen}
+          selectedImage={selectedImage as CardFields}
+        />
+      )}
+      <AlertsModal
+        show={alertsModalOpen}
+        setAlertsModalOpen={setAlertsModalOpen}
+      />
       <div className="">
         <img
           src={card.urls?.regular}
@@ -98,8 +114,8 @@ function Card({ card }: CardProps) {
             <div onClick={handleHeartClick}>
               <HeartButton liked={liked} />
             </div>
-            <div onClick={() => setSelectedImage(card)}>
-              <PlusButton showModal={handlePlusClick} />
+            <div onClick={handlePlusClick}>
+              <PlusButton />
             </div>
           </div>
         </div>
