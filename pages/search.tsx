@@ -1,7 +1,8 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import Cards, { CardFields } from "../components/Cards";
+
+import { CardFields } from "../components/Cards";
 import Header from "../components/Header";
 import SearchTabs from "../components/SearchTabs";
 
@@ -102,8 +103,6 @@ const Search = ({}: Props) => {
           </div>
         </InfiniteScroll>
       </section>
-
-      {/* <Footer /> */}
     </div>
   );
 };

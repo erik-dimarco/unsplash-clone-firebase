@@ -1,5 +1,5 @@
 import { HeartIcon } from "@heroicons/react/solid";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 
 type HeartButtonProps = {
   liked: boolean;

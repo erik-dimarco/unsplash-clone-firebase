@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/outline";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 
 type PlusButtomProps = {};
 

@@ -20,7 +20,7 @@ import Tabs, { TabsData } from "./Tabs";
 const ProfileTabs = () => {
   const [collections, setCollections] = useState<DocumentData[]>([]);
   const [likes, setLikes] = useState<CardFields[]>([]);
-  const { user, error, isLoading } = useUser();
+  const { user } = useUser();
 
   useEffect(() => {
     const q = query(
