@@ -8,10 +8,11 @@ type CardsProps = {
 export type CardFields = {
   id: string;
   description: string;
-  createdAt?: number;
   user: User;
   urls: Urls;
 };
+
+export type LikedCardFields = CardFields & { createdAt: Date };
 
 type User = {
   id?: string;

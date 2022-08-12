@@ -13,14 +13,14 @@ const SearchModal = ({}: SearchModalProps) => {
     "Mountains",
     "City",
   ]);
-  const [trendingSearches, setTrendingSearches] = useState<string[]>([
+  const [trendingSearches] = useState<string[]>([
     "dark",
     "krishna",
     "phone wallpaper",
     "vacation",
     "ganesh",
   ]);
-  const [trendingTopics, setTrendingTopics] = useState<any[]>([
+  const [trendingTopics] = useState<any[]>([
     {
       title: "Travel",
       imageUrl: "https://placeimg.com/60/60/travel",
@@ -43,6 +43,13 @@ const SearchModal = ({}: SearchModalProps) => {
     },
   ]);
 
+  const handleSearch = (search: string) => {
+    router.push({
+      pathname: "/search",
+      query: { topic: search },
+    });
+  };
+
   return (
     <div className="absolute z-50 w-full mt-[2px] mx-auto bg-white p-3 border rounded-md shadow-md border-gray-200">
       {recentSearches.length > 0 && (
@@ -61,12 +68,7 @@ const SearchModal = ({}: SearchModalProps) => {
             {recentSearches.map((search, index) => (
               <button
                 key={index}
-                onClick={() =>
-                  router.push({
-                    pathname: "/search",
-                    query: { topic: search },
-                  })
-                }
+                onClick={() => handleSearch(search)}
                 className="text-sm text-gray-500 cursor-pointer rounded-md border-gray-300 hover:bg-gray-100 p-3 border"
               >
                 {search}
@@ -82,12 +84,7 @@ const SearchModal = ({}: SearchModalProps) => {
         {trendingSearches.map((trendingSearch, index) => (
           <button
             key={index}
-            onClick={() =>
-              router.push({
-                pathname: "/search",
-                query: { topic: trendingSearch },
-              })
-            }
+            onClick={() => handleSearch(trendingSearch)}
             className="flex items-center text-sm p-3 text-gray-500 cursor-pointer hover:bg-gray-100 space-x-2 mb-5 border border-gray-300 rounded-md"
           >
             <TrendingUpIcon className="h-4 w-4 text-gray-500 mr-2" />
@@ -102,12 +99,7 @@ const SearchModal = ({}: SearchModalProps) => {
         {trendingTopics.map((topic, index) => (
           <button
             key={index}
-            onClick={() =>
-              router.push({
-                pathname: "/search",
-                query: { topic: topic.title },
-              })
-            }
+            onClick={() => handleSearch(topic.title)}
             className="flex items-center pr-3 text-sm text-gray-500 cursor-pointer hover:bg-gray-100 space-x-2 border border-gray-300 rounded-md"
           >
             <img src={topic.imageUrl} className="mr-4 h-10 w-10" />

@@ -85,8 +85,10 @@ const CollectionsModal = ({
 
     //upload to firebase
     // 1. Create collection
-    const collectionRef = collection(db, "collections");
-    await setDoc(doc(collectionRef, user?.sub as string), {
+    const randomDocumentId = Math.random().toString(36).substring(2, 15);
+    console.log("randomDocumentId", randomDocumentId);
+    await setDoc(doc(db, "collections", randomDocumentId), {
+      id: randomDocumentId,
       userId: user?.sub,
       name: nameRef.current?.value,
       description: descriptionRef.current?.value,
@@ -95,7 +97,30 @@ const CollectionsModal = ({
     });
 
     // 2. Add images to collection (subcollection)
-    await addDoc(collection(collectionRef, user?.sub as string, "images"), {
+    const collectionRef = collection(db, "collections");
+    await addDoc(collection(collectionRef, randomDocumentId, "images"), {
+      name: selectedCard.user.name,
+      userProfileImage: selectedCard.user.profile_image.large,
+      imageId: selectedCard.id,
+      imageURL: selectedCard.urls.regular,
+      description: selectedCard.description,
+      timestamp: serverTimestamp(),
+    });
+
+    setLoading(false);
+    setModalPage2(false);
+    setModalOpen(false);
+  };
+
+  const addToExitingCollection = async (documentId: string) => {
+    if (loading) return;
+
+    setLoading(true);
+
+    //upload to firebase
+    // 1. Add images to existing collection (subcollection)
+    const collectionRef = collection(db, "collections");
+    await addDoc(collection(collectionRef, documentId, "images"), {
       name: selectedCard.user.name,
       userProfileImage: selectedCard.user.profile_image.large,
       imageId: selectedCard.id,
@@ -261,17 +286,13 @@ const CollectionsModal = ({
                       </div>
                       {collections.map((collection) => (
                         <div className="mt-6 mb-6">
-                          {/* <img
-                            src={collection.data().image}
-                            height="300px"
-                            width="300px"
-                            alt=""
-                          /> */}
                           <button
                             type="button"
                             className="w-full rounded-md text-left border border-gray-400 border-dashed bg-gray-100 px-4 py-6 text-xl font-medium text-gray-500 
                         hover:bg-gray-200 focus:outline-none"
-                            onClick={handleCreateCollection}
+                            onClick={() =>
+                              addToExitingCollection(collection.id)
+                            }
                           >
                             {collection.data().name}
                           </button>

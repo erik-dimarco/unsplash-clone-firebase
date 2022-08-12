@@ -19,7 +19,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import AlertsModal from "./AlertsModal";
-import Footer from "./Footer";
 
 type CardProps = {
   card: CardFields;
@@ -29,7 +28,7 @@ function Card({ card }: CardProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<CardFields>();
   const [liked, setLiked] = useState<boolean>(false);
-  const { user, error, isLoading } = useUser();
+  const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
   const [alertsModalOpen, setAlertsModalOpen] = useState<boolean>(false);
 

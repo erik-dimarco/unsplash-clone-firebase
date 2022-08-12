@@ -14,57 +14,62 @@ import {
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import Cards, { CardFields } from "./Cards";
+import Cards, { LikedCardFields } from "./Cards";
+import CollectionDetails from "./CollectionDetails";
 import Tabs, { TabsData } from "./Tabs";
 
 const ProfileTabs = () => {
   const [collections, setCollections] = useState<DocumentData[]>([]);
-  const [likes, setLikes] = useState<CardFields[]>([]);
+  const [likes, setLikes] = useState<LikedCardFields[]>([]);
   const { user } = useUser();
 
   useEffect(() => {
-    const q = query(
-      collection(db, "collections"),
-      where("userId", "==", user?.sub)
-    );
-    const unsubscribe: DocumentData = onSnapshot(q, (querySnapshot) => {
-      setCollections(querySnapshot.docs);
+    if (user) {
+      const q = query(
+        collection(db, "collections"),
+        where("userId", "==", user.sub)
+      );
+      const unsubscribe: DocumentData = onSnapshot(q, (querySnapshot) => {
+        setCollections(querySnapshot.docs);
 
-      return unsubscribe;
-    });
-  }, [db]);
+        return unsubscribe;
+      });
+    }
+  }, [db, user]);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "likes"),
-      where("likedByUserId", "==", user?.sub)
-    );
-    const unsubscribe: DocumentData = onSnapshot(q, (querySnapshot) => {
-      const likedData: CardFields[] = [];
-      querySnapshot.forEach((doc) => {
-        console.log("timestamp", doc.data().timestamp);
-
-        likedData.push({
-          id: doc.data().imageId,
-          description: doc.data().description,
-          createdAt: doc.data().timestamp.seconds,
-          user: {
-            name: doc.data().name,
-            profile_image: {
-              large: doc.data().userProfileImage,
+    if (user) {
+      const q = query(
+        collection(db, "likes"),
+        where("likedByUserId", "==", user.sub)
+      );
+      const unsubscribe: DocumentData = onSnapshot(q, (querySnapshot) => {
+        const likedData: LikedCardFields[] = [];
+        querySnapshot.forEach((doc) => {
+          likedData.push({
+            id: doc.data().imageId,
+            description: doc.data().description,
+            createdAt: doc.data().timestamp
+              ? new Date(doc.data().timestamp.toDate().toDateString())
+              : new Date(),
+            user: {
+              name: doc.data().name,
+              profile_image: {
+                large: doc.data().userProfileImage,
+              },
             },
-          },
-          urls: {
-            regular: doc.data().imageURL,
-          },
+            urls: {
+              regular: doc.data().imageURL,
+            },
+          });
         });
+
+        setLikes(likedData);
+
+        return unsubscribe;
       });
-
-      setLikes(likedData);
-
-      return unsubscribe;
-    });
-  }, [db]);
+    }
+  }, [db, user]);
 
   const tabs: TabsData[] = [
     {
@@ -76,7 +81,13 @@ const ProfileTabs = () => {
       tabName: "Likes",
       tabIcon: <HeartIcon />,
       count: likes.length,
-      tabContent: <Cards imageCards={likes} />,
+      tabContent: (
+        <Cards
+          imageCards={likes.sort(
+            (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+          )}
+        />
+      ),
     },
     {
       tabName: "Collections",
@@ -85,7 +96,10 @@ const ProfileTabs = () => {
       tabContent: (
         <>
           {collections.map((collection) => (
-            <div>{collection.data().name}</div>
+            <CollectionDetails
+              path={`collections/${collection.data().id}/images`}
+              collectionDetails={collection.data()}
+            />
           ))}
         </>
       ),
