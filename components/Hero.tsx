@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import _ from "lodash";
 
 import SearchModal from "./SearchModal";
-import { ChevronRightIcon } from "@heroicons/react/outline";
+import { ChevronRightIcon, XIcon } from "@heroicons/react/outline";
 import { CardFields } from "./Cards";
 import { Transition } from "@headlessui/react";
 
@@ -67,6 +67,11 @@ const Hero = ({ placeholder, images }: HeroProps) => {
     setModal(false);
   };
 
+  const handleXClick = () => {
+    setSearchInput("");
+    setModal(true);
+  };
+
   return (
     <div className="relative h-[310px] md:h-[594px] w-full mb-4">
       <Image src={headerImage} layout="fill" objectFit="cover" />
@@ -84,12 +89,14 @@ const Hero = ({ placeholder, images }: HeroProps) => {
         className="absolute h-12 w-12 right-0 bottom-0 text-white text-md p-3 cursor-pointer"
       />
 
-      <div className="relative max-w-4xl top-1/4 left-[10%] sm:left-1/4">
-        <p className="text-white font-bold text-4xl mb-3">Unsplash</p>
-        <p className="text-white text-large">
+      <div className="absolute w-[75%] top-1/4 left-16 md:left-40 md:w-[70%] ">
+        <p className="relative text-white font-bold text-4xl mb-3">Unsplash</p>
+        <p className="relative text-white text-large">
           The internet’s source of freely-usable images.
         </p>
-        <p className="text-white text-large">Powered by creators everywhere.</p>
+        <p className="relative text-white text-large">
+          Powered by creators everywhere.
+        </p>
 
         {/* Search box */}
 
@@ -116,6 +123,11 @@ const Hero = ({ placeholder, images }: HeroProps) => {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
+            </div>
+            <div onClick={handleXClick}>
+              {searchInput && (
+                <XIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
+              )}
             </div>
             <button type="submit" hidden />
           </form>

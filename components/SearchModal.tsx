@@ -51,7 +51,7 @@ const SearchModal = ({}: SearchModalProps) => {
   };
 
   return (
-    <div className="absolute z-50 w-full mt-[2px] mx-auto bg-white p-3 border rounded-md shadow-md border-gray-200">
+    <div className="hidden md:block md:absolute z-50 w-full mt-[2px] mx-auto bg-white p-3 border rounded-md shadow-md border-gray-200">
       {recentSearches.length > 0 && (
         <>
           <div className="flex items-center mb-4">

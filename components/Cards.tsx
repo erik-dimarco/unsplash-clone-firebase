@@ -32,7 +32,7 @@ type ProfileImage = {
 
 const Cards = ({ imageCards }: CardsProps) => {
   return (
-    <div className="sm:columns-3 xs:columns-1 mt-16 gap-8">
+    <div className="sm:columns-3 xs:columns-1 max-w-7xl mx-auto px-4 mt-16 gap-8">
       {imageCards.map((card: CardFields) => (
         <Card key={card.id} card={card} />
       ))}
