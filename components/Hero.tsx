@@ -1,13 +1,10 @@
-import React, { createRef, useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { SearchIcon } from "@heroicons/react/solid";
-import { useRouter } from "next/router";
 import _ from "lodash";
 
-import SearchModal from "./SearchModal";
-import { ChevronRightIcon, XIcon } from "@heroicons/react/outline";
+import { ChevronRightIcon } from "@heroicons/react/outline";
 import { CardFields } from "./Cards";
-import { Transition } from "@headlessui/react";
+import SearchBar from "./SearchBar";
 
 interface HeroProps {
   placeholder: string;
@@ -17,60 +14,12 @@ interface HeroProps {
 const Hero = ({ placeholder, images }: HeroProps) => {
   const initialHeroObject = _.sample(images);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [isSearchModalOpen, setModal] = useState<boolean>(false);
   const [headerImage, setHeaderImage] = useState<string>(
     initialHeroObject?.urls.regular as string
   );
-  const [photoBy, setPhotoBy] = useState<string>(
+  const [photoby, setPhotoBy] = useState<string>(
     initialHeroObject?.user?.name as string
   );
-  const router = useRouter();
-  const ref = createRef<HTMLDivElement>();
-
-  // Handle Closing of search modal
-  useEffect(() => {
-    const listener = (event: any) => {
-      // Do nothing if clicking ref's element or descendent elements
-      if (!ref.current || ref.current.contains(event.target)) {
-        return;
-      }
-      // Otherwise close the modal
-      handleClose();
-    };
-
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
-    return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
-    };
-  });
-
-  const search = (event: any) => {
-    event.preventDefault();
-    if (searchInput) {
-      router.push({
-        pathname: "/search",
-        query: { topic: searchInput },
-      });
-
-      resetInput();
-    }
-  };
-
-  const resetInput = () => {
-    setSearchInput("");
-  };
-
-  const handleClose = () => {
-    setModal(false);
-  };
-
-  const handleXClick = () => {
-    setSearchInput("");
-    setModal(true);
-  };
 
   return (
     <div className="relative h-[310px] md:h-[594px] w-full mb-4">
@@ -101,47 +50,7 @@ const Hero = ({ placeholder, images }: HeroProps) => {
         {/* Search box */}
 
         <div className="relative w-full invisible sm:visible">
-          <form
-            onSubmit={(event) => {
-              search(event);
-            }}
-            className="flex items-center space-x-2 border-2 rounded-md outline-none border-gray-200 bg-white px-3 py-4 mt-4 mb-2"
-          >
-            <SearchIcon
-              className="h-5 w-5 text-gray-500 cursor-pointer"
-              onClick={search}
-            />
-            <div
-              ref={ref}
-              onClick={() => setModal(true)}
-              className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm"
-            >
-              <input
-                className="outline-none w-full"
-                type="text"
-                placeholder={placeholder}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
-            </div>
-            <div onClick={handleXClick}>
-              {searchInput && (
-                <XIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
-              )}
-            </div>
-            <button type="submit" hidden />
-          </form>
-          <Transition
-            show={isSearchModalOpen}
-            enter="transition duration-100 ease-out"
-            enterFrom="transform scale-95 opacity-0"
-            enterTo="transform scale-100 opacity-100"
-            leave="transition duration-75 ease-out"
-            leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-95 opacity-0"
-          >
-            <SearchModal />
-          </Transition>
+          <SearchBar variant="hero" placeholder={placeholder} />
         </div>
         <div className="flex items-center invisible sm:visible">
           <p className="text-white text-sm font-[500] mr-1">Trending:</p>
