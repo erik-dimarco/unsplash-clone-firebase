@@ -22,15 +22,12 @@ const Search = ({}: Props) => {
 
   useEffect(() => {
     if (searchString) {
-      const initialSearchResults = async () => {
+      const results = async () => {
         const resCards = await fetch(
           `https://api.unsplash.com/search/photos?&page=${pageNumber}&query=${searchString}&per_page=${resultsPerPage}&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
         );
 
         const imageCards = await resCards.json();
-
-        setImagesTotal(imageCards.total);
-        setTotalPages(imageCards.total_pages);
 
         const cards = imageCards.results.map((card: CardFields) => {
           return {
@@ -49,41 +46,22 @@ const Search = ({}: Props) => {
           };
         });
 
-        setSearchResults(cards);
+        if (pageNumber === 1) {
+          setSearchResults(imageCards.results);
+          setImagesTotal(imageCards.total);
+          setTotalPages(imageCards.total_pages);
+        } else {
+          setSearchResults([...searchResults, ...imageCards.results]);
+        }
       };
 
-      initialSearchResults();
+      results();
     }
-  }, [searchString]);
+  }, [searchString, pageNumber, resultsPerPage]);
 
   const getMoreSearchResults = async () => {
     setPageNumber(pageNumber + 1);
     setHasMoreResults(totalPages > pageNumber);
-
-    const resCards = await fetch(
-      `https://api.unsplash.com/search/photos?&page=${pageNumber}&query=${searchString}&per_page=${resultsPerPage}&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
-    );
-
-    const imageCards = await resCards.json();
-
-    const moreCards = imageCards.results.map((card: CardFields) => {
-      return {
-        id: card.id,
-        description: card.description,
-        user: {
-          id: card.user.id,
-          name: card.user.name,
-          username: card.user.username,
-          profile_image: card.user.profile_image,
-        },
-        urls: {
-          full: card.urls.full,
-          regular: card.urls.regular,
-        },
-      };
-    });
-
-    setSearchResults((searchResults) => [...searchResults, ...moreCards]);
   };
 
   return (

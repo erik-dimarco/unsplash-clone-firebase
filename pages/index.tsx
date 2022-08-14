@@ -15,7 +15,7 @@ const Home = ({ heroCarousel }: Props) => {
   const [pageNumber, setPageNumber] = useState<number>(1);
 
   useEffect(() => {
-    const initialPopularPhotos = async () => {
+    const photosForCards = async () => {
       const resCards = await fetch(
         `https://api.unsplash.com/photos?&page=${pageNumber}&per_page=25&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
       );
@@ -39,39 +39,43 @@ const Home = ({ heroCarousel }: Props) => {
         };
       });
 
-      setPopularPhotos(cards);
+      if (pageNumber === 1) {
+        setPopularPhotos(cards);
+      } else {
+        setPopularPhotos([...popularPhotos, ...cards]);
+      }
     };
 
-    initialPopularPhotos();
-  }, []);
+    photosForCards();
+  }, [pageNumber]);
 
   const getMoreSearchResults = async () => {
     setPageNumber(pageNumber + 1);
 
-    const resCards = await fetch(
-      `https://api.unsplash.com/photos?&page=${pageNumber}&per_page=25&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
-    );
+    // const resCards = await fetch(
+    //   `https://api.unsplash.com/photos?&page=${pageNumber}&per_page=25&order_by=popular&client_id=LybcoBkZTUjRLs2BXCnfz6Z-gAJTdC8uUa-F68hSeS0`
+    // );
 
-    const imageCards = await resCards.json();
+    // const imageCards = await resCards.json();
 
-    const moreCards = imageCards.map((card: CardFields) => {
-      return {
-        id: card.id,
-        description: card.description,
-        user: {
-          id: card.user.id,
-          name: card.user.name,
-          username: card.user.username,
-          profile_image: card.user.profile_image,
-        },
-        urls: {
-          full: card.urls.full,
-          regular: card.urls.regular,
-        },
-      };
-    });
+    // const moreCards = imageCards.map((card: CardFields) => {
+    //   return {
+    //     id: card.id,
+    //     description: card.description,
+    //     user: {
+    //       id: card.user.id,
+    //       name: card.user.name,
+    //       username: card.user.username,
+    //       profile_image: card.user.profile_image,
+    //     },
+    //     urls: {
+    //       full: card.urls.full,
+    //       regular: card.urls.regular,
+    //     },
+    //   };
+    // });
 
-    setPopularPhotos((popularPhotos) => [...popularPhotos, ...moreCards]);
+    // setPopularPhotos((popularPhotos) => [...popularPhotos, ...moreCards]);
   };
 
   return (

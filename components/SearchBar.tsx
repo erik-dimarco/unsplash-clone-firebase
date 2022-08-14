@@ -62,7 +62,7 @@ const SearchBar = ({ variant, placeholder }: SearchBarProps) => {
   };
 
   return (
-    <div>
+    <div ref={ref}>
       <form
         onSubmit={(event) => {
           search(event);
@@ -79,7 +79,6 @@ const SearchBar = ({ variant, placeholder }: SearchBarProps) => {
         />
         <div
           onClick={() => setModal(true)}
-          ref={ref}
           className={`flex-1 outline-none placeholder-gray-500 text-xs md:text-sm ${
             variant === "hero" ? "bg-transparent" : ""
           }`}
